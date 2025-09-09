@@ -1,617 +1,859 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encrypted DNS Profile Generator for Apple Devices</title>
-    <meta name="description" content="Securely create and download encrypted DNS profiles (DoH/DoT) for iOS, iPadOS, and macOS devices with enhanced privacy protection.">
-    <meta name="keywords" content="dns, mobileconfig, doh, dot, encrypted dns, apple, ios, macos, nextdns, controld, mullvad, cloudflare, privacy, security">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Base font configuration */
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        /* Extreme Black Theme */
-        :root {
-            --bg-primary: #000000;
-            --bg-secondary: #0a0a0a;
-            --bg-tertiary: #111111;
-            --bg-card: rgba(16, 16, 16, 0.7);
-            --bg-glass: rgba(255, 255, 255, 0.05);
-            
-            --text-primary: #e5e5e5;
-            --text-secondary: #a3a3a3;
-            --text-muted: #737373;
-            
-            --accent-primary: #6d28d9;
-            --accent-primary-hover: #7c3aed;
-            --accent-secondary: #0891b2;
-            --accent-success: #059669;
-            --accent-warning: #f59e0b;
-            --accent-error: #dc2626;
-            
-            --border-primary: rgba(255, 255, 255, 0.1);
-            --border-secondary: rgba(255, 255, 255, 0.05);
-            --border-accent: rgba(109, 40, 217, 0.3);
-            
-            --input-bg: rgba(255, 255, 255, 0.03);
-            --input-border: rgba(255, 255, 255, 0.1);
-            --input-border-focus: var(--accent-primary);
-        }
-
-        /* Base styles */
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Glass morphism effects */
-        .glass-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid var(--border-primary);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .glass-card:hover {
-            border-color: var(--border-accent);
-            transform: translateY(-2px);
-        }
-
-        /* Enhanced form inputs */
-        .form-input {
-            background: var(--input-bg);
-            border: 1px solid var(--input-border);
-            color: var(--text-primary);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--input-border-focus);
-            box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.2);
-        }
-        
-        .form-input-wrapper {
-            position: relative;
-        }
-
-        .input-icon {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: var(--text-muted);
-            transition: color 0.2s;
-            display: none; /* Hidden by default */
-        }
-        
-        .form-input-wrapper:hover .input-icon {
-            display: block; /* Show on hover */
-        }
-
-        .input-icon:hover {
-            color: var(--text-primary);
-        }
-        
-        .tooltip {
-            position: absolute;
-            background-color: var(--bg-secondary);
-            color: var(--text-primary);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.2s, visibility 0.2s;
-            white-space: nowrap;
-        }
-
-        .input-icon:hover .tooltip {
-            opacity: 1;
-            visibility: visible;
-        }
-
-
-        /* Primary button styling */
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-primary-hover) 100%);
-            border: none;
-            color: white;
-            font-weight: 600;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px) scale(1.02);
-        }
-
-        /* Status indicators */
-        .status-success { color: var(--accent-success); }
-        .status-warning { color: var(--accent-warning); }
-        .status-error { color: var(--accent-error); }
-
-        /* Improved table styling */
-        .provider-table {
-            background: var(--bg-glass);
-            border: 1px solid var(--border-secondary);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        .provider-table th, .provider-table td {
-            position: relative;
-        }
-
-        .provider-table code {
-            background: rgba(109, 40, 217, 0.1);
-            color: var(--accent-primary);
-            padding: 4px 8px;
-            border-radius: 6px;
-        }
-        
-        .copy-icon-table {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: var(--text-muted);
-            transition: color 0.2s;
-            display: none;
-        }
-        
-        .provider-table tr:hover .copy-icon-table {
-            display: block;
-        }
-        
-        .copy-icon-table:hover {
-            color: var(--text-primary);
-        }
-
-        /* Animation utilities */
-        .fade-in { animation: fadeIn 0.6s ease-out; }
-        .slide-up { animation: slideUp 0.6s ease-out; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Message styling */
-        .message-box {
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .error-message {
-            color: var(--accent-error);
-            background: rgba(220, 38, 38, 0.1);
-            border: 1px solid rgba(220, 38, 38, 0.2);
-        }
-        .success-message {
-            color: var(--accent-success);
-            background: rgba(5, 150, 105, 0.1);
-            border: 1px solid rgba(5, 150, 105, 0.2);
-        }
-
-        /* Loading spinner */
-        .loading-spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            margin-right: 8px;
-        }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Encrypted DNS Profile Generator for Apple Devices</title>
+  <meta name="description" content="Securely create and download encrypted DNS profiles (DoH/DoT) for iOS, iPadOS, and macOS devices with enhanced privacy protection.">
+  <meta name="keywords" content="dns, mobileconfig, doh, dot, encrypted dns, apple, ios, macos, nextdns, controld, mullvad, cloudflare, privacy, security">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+      transition: background-color 0.3s, color 0.3s;
+    }
+    :root {
+      --bg-primary: #000;
+      --bg-secondary: #0a0a0a;
+      --bg-tertiary: #111;
+      --bg-card: rgba(16,16,16,0.7);
+      --bg-glass: rgba(255,255,255,0.05);
+      --text-primary: #e5e5e5;
+      --text-secondary: #a3a3a3;
+      --text-muted: #737373;
+      --accent-primary: #6d28d9;
+      --accent-primary-hover: #7c3aed;
+      --accent-secondary: #0891b2;
+      --accent-success: #059669;
+      --accent-warning: #f59e0b;
+      --accent-error: #dc2626;
+      --border-primary: rgba(255,255,255,0.1);
+      --border-secondary: rgba(255,255,255,0.05);
+      --border-accent: rgba(109,40,217,0.3);
+      --input-bg: rgba(255,255,255,0.03);
+      --input-border: rgba(255,255,255,0.1);
+      --input-border-focus: var(--accent-primary);
+    }
+    body.light {
+      --bg-primary: #f9fafb;
+      --bg-secondary: #fff;
+      --bg-tertiary: #eee;
+      --bg-card: rgba(240,240,240,0.7);
+      --bg-glass: rgba(0,0,0,0.05);
+      --text-primary: #222;
+      --text-secondary: #444;
+      --text-muted: #777;
+    }
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--border-primary);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+    }
+    .form-input {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-primary);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--input-border-focus);
+      box-shadow: 0 0 0 3px rgba(109,40,217,0.2);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-primary-hover) 100%);
+      border: none;
+      color: white;
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.02);
+    }
+    .status-success { color: var(--accent-success); }
+    .status-warning { color: var(--accent-warning); }
+    .status-error { color: var(--accent-error); }
+    .provider-table {
+      background: var(--bg-glass);
+      border: 1px solid var(--border-secondary);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .provider-table th, .provider-table td { position: relative; }
+    .provider-table code {
+      background: rgba(109,40,217,0.1);
+      color: var(--accent-primary);
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .copy-icon-table {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: color 0.2s;
+      display: none;
+    }
+    .provider-table tr:hover .copy-icon-table {
+      display: block;
+    }
+    .copy-icon-table:hover {
+      color: var(--text-primary);
+    }
+    .fade-in { animation: fadeIn 0.6s ease-out; }
+    .slide-up { animation: slideUp 0.6s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .message-box {
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .error-message {
+      color: var(--accent-error);
+      background: rgba(220,38,38,0.1);
+      border: 1px solid rgba(220,38,38,0.2);
+    }
+    .success-message {
+      color: var(--accent-success);
+      background: rgba(5,150,105,0.1);
+      border: 1px solid rgba(5,150,105,0.2);
+    }
+    .loading-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 8px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    /* Modal animation */
+    .modal {
+      opacity: 0;
+      transform: scale(0.98);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .modal.active {
+      opacity: 1;
+      transform: scale(1);
+    }
+    @media (max-width: 640px) {
+      .glass-card, .provider-table {
+        border-radius: 0.75rem;
+        padding: 1rem;
+      }
+      .fade-in, .slide-up { animation-duration: 0.3s; }
+    }
+  </style>
 </head>
 <body class="min-h-screen">
-    <main class="w-full max-w-5xl mx-auto py-8 px-4">
-        <div class="glass-card rounded-3xl overflow-hidden fade-in">
-            <!-- Header -->
-            <header class="p-8 text-center border-b border-[var(--border-primary)]">
-                <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] bg-clip-text text-transparent mb-2">
-                    Encrypted DNS Profile Generator
-                </h1>
-                <p class="text-[var(--text-secondary)] text-base md:text-lg">
-                    Create secure DNS profiles for iOS 14+, iPadOS 14+, and macOS 11+
-                </p>
-            </header>
+  <div class="flex justify-between items-center w-full max-w-5xl mx-auto mt-4 px-2 sm:px-4">
+    <div>
+      <select id="lang-select" class="form-input px-2 py-1 rounded-xl text-sm" aria-label="Language select">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+        <option value="fr">Français</option>
+        <option value="es">Español</option>
+        <option value="ja">日本語</option>
+        <option value="ko">한국어</option>
+        <option value="ru">Русский</option>
+        <option value="zh">中文</option>
+      </select>
+    </div>
+    <button id="theme-toggle" class="btn-primary px-4 py-2 rounded-xl text-sm font-semibold" aria-label="Toggle theme">🌙/☀️</button>
+  </div>
+  <main class="w-full max-w-5xl mx-auto py-8 px-2 sm:px-4">
+    <div class="glass-card rounded-3xl overflow-hidden fade-in">
+      <!-- Header -->
+      <header class="p-8 text-center border-b border-[var(--border-primary)]">
+        <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] bg-clip-text text-transparent mb-2" id="main-title">
+          Encrypted DNS Profile Generator
+        </h1>
+        <p class="text-[var(--text-secondary)] text-base md:text-lg" id="main-desc">
+          Create secure DNS profiles for iOS 14+, iPadOS 14+, and macOS 11+
+        </p>
+      </header>
 
-            <div class="p-6 md:p-8">
-                <!-- Tab Navigation -->
-                <nav class="flex justify-center mb-8" role="tablist">
-                    <div class="flex p-2 rounded-2xl glass-card">
-                        <button id="tab-generator" class="glass-button active px-6 py-3 rounded-xl font-semibold transition-all duration-300" role="tab" aria-selected="true" aria-controls="content-generator">Generator</button>
-                        <button id="tab-help" class="glass-button px-6 py-3 rounded-xl font-semibold transition-all duration-300" role="tab" aria-selected="false" aria-controls="content-help">Help & Info</button>
-                    </div>
-                </nav>
+      <div class="p-6 md:p-8">
+        <!-- Tab Navigation -->
+        <nav class="flex justify-center mb-8" role="tablist">
+          <div class="flex p-2 rounded-2xl glass-card">
+            <button id="tab-generator" class="glass-button active px-6 py-3 rounded-xl font-semibold transition-all duration-300" role="tab" aria-selected="true" aria-controls="content-generator" tabindex="0">Generator</button>
+            <button id="tab-help" class="glass-button px-6 py-3 rounded-xl font-semibold transition-all duration-300" role="tab" aria-selected="false" aria-controls="content-help" tabindex="0">Help & Info</button>
+          </div>
+        </nav>
 
-                <!-- Generator Tab Content -->
-                <div id="content-generator" class="tab-content active slide-up" role="tabpanel" aria-labelledby="tab-generator">
-                    <form id="dns-form" class="space-y-6" novalidate>
-                        <div id="form-messages" class="space-y-3" aria-live="polite"></div>
+        <!-- Generator Tab Content -->
+        <div id="content-generator" class="tab-content active slide-up" role="tabpanel" aria-labelledby="tab-generator">
+          <form id="dns-form" class="space-y-6" novalidate>
+            <div id="form-messages" class="space-y-3" aria-live="polite"></div>
 
-                        <!-- Profile Name -->
-                        <div>
-                            <label for="profileName" class="block text-sm font-semibold mb-3">Profile Name <span class="text-[var(--accent-error)]">*</span></label>
-                            <input type="text" id="profileName" class="form-input w-full px-4 py-3 rounded-xl" placeholder="e.g., My Secure DNS" required maxlength="50">
-                        </div>
-                        
-                        <!-- Provider Presets -->
-                        <div>
-                            <label for="provider" class="block text-sm font-semibold mb-3">Provider Preset</label>
-                            <select id="provider" class="form-input w-full px-4 py-3 rounded-xl appearance-none"></select>
-                        </div>
-
-                        <!-- Resolver ID -->
-                        <div id="resolver-id-group" class="hidden">
-                            <label for="resolverId" class="block text-sm font-semibold mb-3">Resolver ID <span class="text-[var(--accent-error)]">*</span></label>
-                            <div class="form-input-wrapper">
-                                <input type="text" id="resolverId" class="form-input w-full px-4 py-3 rounded-xl" placeholder="Enter your unique ID">
-                                <span class="input-icon paste-icon">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2v0M9 12h6m-6 4h6m-6-8h6"></path></svg>
-                                    <span class="tooltip">Paste</span>
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Protocol Selection -->
-                        <div>
-                            <label for="protocol" class="block text-sm font-semibold mb-3">DNS Protocol</label>
-                            <select id="protocol" class="form-input w-full px-4 py-3 rounded-xl appearance-none">
-                                <option value="doh">DNS-over-HTTPS (DoH)</option>
-                                <option value="dot">DNS-over-TLS (DoT)</option>
-                            </select>
-                        </div>
-
-                        <!-- DoH/DoT Fields -->
-                        <div id="doh-fields">
-                            <label for="dohURL" class="block text-sm font-semibold mb-3">DoH Server URL <span class="text-[var(--accent-error)]">*</span></label>
-                            <div class="form-input-wrapper">
-                                <input type="url" id="dohURL" class="form-input w-full px-4 py-3 rounded-xl" placeholder="https://dns.example.com/dns-query" required>
-                                <span class="input-icon paste-icon" id="paste-doh">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2v0M9 12h6m-6 4h6m-6-8h6"></path></svg>
-                                    <span class="tooltip">Paste</span>
-                                </span>
-                            </div>
-                        </div>
-                        <div id="dot-fields" class="hidden">
-                            <label for="dotServer" class="block text-sm font-semibold mb-3">DoT Server Hostname <span class="text-[var(--accent-error)]">*</span></label>
-                            <div class="form-input-wrapper">
-                                <input type="text" id="dotServer" class="form-input w-full px-4 py-3 rounded-xl" placeholder="dns.example.com">
-                                <span class="input-icon paste-icon" id="paste-dot">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2v0M9 12h6m-6 4h6m-6-8h6"></path></svg>
-                                    <span class="tooltip">Paste</span>
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <!-- Advanced Settings -->
-                        <div>
-                            <button type="button" id="advanced-toggle" class="text-sm font-semibold text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)]">Advanced Settings</button>
-                            <div id="advanced-settings" class="hidden mt-4">
-                                <label for="serverIPs" class="block text-sm font-semibold mb-3">Server IP Addresses (Optional)</label>
-                                <textarea id="serverIPs" rows="3" class="form-input w-full px-4 py-3 rounded-xl" placeholder="1.1.1.1 (one per line)"></textarea>
-                            </div>
-                        </div>
-                        
-                        <div class="pt-4">
-                            <button type="submit" id="generate-btn" class="btn-primary w-full py-4 px-6 rounded-xl text-base font-semibold">
-                                <span id="btn-text">Generate & Download Profile</span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Help Tab Content -->
-                <div id="content-help" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-help">
-                    <div class="space-y-8">
-                        <section>
-                            <h2 class="text-2xl font-bold mb-4">What is Encrypted DNS?</h2>
-                            <p class="text-[var(--text-secondary)]">Encrypted DNS (like DoH and DoT) secures your DNS queries, preventing others from seeing the websites you visit. This enhances your privacy and security online.</p>
-                        </section>
-                        <section>
-                            <h2 class="text-2xl font-bold mb-4">Trusted DNS Providers</h2>
-                            <div class="provider-table">
-                                <table class="w-full text-left">
-                                    <thead><tr><th class="p-4">Provider</th><th class="p-4">DoH URL</th><th class="p-4">DoT Hostname</th></tr></thead>
-                                    <tbody id="provider-info-table"></tbody>
-                                </table>
-                            </div>
-                        </section>
-                    </div>
-                </div>
+            <!-- Profile Name -->
+            <div>
+              <label for="profileName" class="block text-sm font-semibold mb-3" id="label-profileName">Profile Name <span class="text-[var(--accent-error)]">*</span></label>
+              <input type="text" id="profileName" class="form-input w-full px-4 py-3 rounded-xl" placeholder="e.g., My Secure DNS" required maxlength="50">
             </div>
+
+            <!-- Provider Presets -->
+            <div>
+              <label for="provider" class="block text-sm font-semibold mb-3" id="label-provider">Provider Preset</label>
+              <div class="flex gap-2 mb-2">
+                <select id="provider" class="form-input w-full px-4 py-3 rounded-xl appearance-none"></select>
+                <button type="button" id="save-preset-btn" class="btn-primary px-4 py-2 rounded-xl text-sm">Save Preset</button>
+                <button type="button" id="load-preset-btn" class="btn-primary px-4 py-2 rounded-xl text-sm">Load Preset</button>
+              </div>
+            </div>
+
+            <!-- Resolver ID -->
+            <div id="resolver-id-group" class="hidden">
+              <label for="resolverId" class="block text-sm font-semibold mb-3" id="label-resolverId">Resolver ID <span class="text-[var(--accent-error)]">*</span></label>
+              <input type="text" id="resolverId" class="form-input w-full px-4 py-3 rounded-xl" placeholder="Enter your unique ID">
+            </div>
+
+            <!-- Protocol Selection -->
+            <div>
+              <label for="protocol" class="block text-sm font-semibold mb-3" id="label-protocol">DNS Protocol</label>
+              <select id="protocol" class="form-input w-full px-4 py-3 rounded-xl appearance-none">
+                <option value="doh">DNS-over-HTTPS (DoH)</option>
+                <option value="dot">DNS-over-TLS (DoT)</option>
+              </select>
+            </div>
+
+            <!-- DoH/DoT Fields -->
+            <div id="doh-fields">
+              <label for="dohURL" class="block text-sm font-semibold mb-3" id="label-dohURL">DoH Server URL <span class="text-[var(--accent-error)]">*</span></label>
+              <input type="url" id="dohURL" class="form-input w-full px-4 py-3 rounded-xl" placeholder="https://dns.example.com/dns-query" required>
+            </div>
+            <div id="dot-fields" class="hidden">
+              <label for="dotServer" class="block text-sm font-semibold mb-3" id="label-dotServer">DoT Server Hostname <span class="text-[var(--accent-error)]">*</span></label>
+              <input type="text" id="dotServer" class="form-input w-full px-4 py-3 rounded-xl" placeholder="dns.example.com">
+            </div>
+
+            <!-- Advanced Settings -->
+            <div>
+              <button type="button" id="advanced-toggle" class="text-sm font-semibold text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)]">Advanced Settings</button>
+              <div id="advanced-settings" class="hidden mt-4">
+                <label for="serverIPs" class="block text-sm font-semibold mb-3" id="label-serverIPs">Server IP Addresses (Optional)</label>
+                <textarea id="serverIPs" rows="3" class="form-input w-full px-4 py-3 rounded-xl" placeholder="1.1.1.1 (one per line)"></textarea>
+              </div>
+            </div>
+
+            <div class="pt-4">
+              <button type="submit" id="generate-btn" class="btn-primary w-full py-4 px-6 rounded-xl text-base font-semibold">
+                <span id="btn-text">Generate & Download Profile</span>
+              </button>
+            </div>
+
+            <!-- Profile Preview Feature -->
+            <div id="profile-preview-container" class="hidden mt-4">
+              <h3 class="text-lg font-semibold mb-2" id="preview-title">Profile Preview (XML)</h3>
+              <pre id="profile-preview" class="bg-gray-900 text-green-300 rounded-xl p-4 overflow-x-auto"></pre>
+            </div>
+
+            <!-- QR Code Generation -->
+            <div id="qr-code-container" class="hidden mt-4 text-center">
+              <h3 class="text-lg font-semibold mb-2" id="qr-title">Transfer to Device (QR Code)</h3>
+              <canvas id="qr-code"></canvas>
+            </div>
+          </form>
         </div>
-    </main>
-    
-        <footer class="w-full max-w-5xl mx-auto py-8 px-4 text-center text-[var(--text-muted)] text-xs">
-        <div class="glass-card rounded-3xl p-6">
-            <h3 class="font-semibold text-sm text-[var(--text-primary)] mb-2">Disclaimer</h3>
-            <p class="mb-2">
-                This tool is provided "as is", without warranty of any kind, express or implied. The developer of this tool is not affiliated with any of the DNS providers listed. By using this generator, you agree that you are solely responsible for your use of the generated profiles and for reviewing the terms and privacy policies of any third-party DNS provider you choose. The information and profiles generated are for personal use, and no guarantee is made regarding their security, privacy, or functionality.
-            </p>
+
+        <!-- Help Tab Content -->
+        <div id="content-help" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-help">
+          <div class="space-y-8">
+            <section>
+              <h2 class="text-2xl font-bold mb-4" id="what-title">What is Encrypted DNS?</h2>
+              <p class="text-[var(--text-secondary)]" id="what-desc">
+                Encrypted DNS (like DoH and DoT) secures your DNS queries, preventing others from seeing the websites you visit. This enhances your privacy and security online.
+              </p>
+            </section>
+            <section>
+              <h2 class="text-2xl font-bold mb-4" id="trusted-title">Trusted DNS Providers</h2>
+              <div class="provider-table">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr>
+                      <th class="p-4" id="provider-head">Provider</th>
+                      <th class="p-4" id="doh-head">DoH URL</th>
+                      <th class="p-4" id="dot-head">DoT Hostname</th>
+                    </tr>
+                  </thead>
+                  <tbody id="provider-info-table"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
         </div>
-    </footer>
-    
-    <script>
-        'use strict';
+      </div>
+    </div>
+  </main>
+  <footer class="w-full max-w-5xl mx-auto py-8 px-4 text-center text-[var(--text-muted)] text-xs">
+    <div class="glass-card rounded-3xl p-6">
+      <h3 class="font-semibold text-sm text-[var(--text-primary)] mb-2" id="disclaimer-title">Disclaimer</h3>
+      <p class="mb-2" id="disclaimer-desc">
+        This tool is provided "as is", without warranty of any kind, express or implied. The developer of this tool is not affiliated with any of the DNS providers listed. By using this generator, you accept all risks and responsibilities.
+      </p>
+    </div>
+  </footer>
+  <script>
+    'use strict';
 
-        class DNSProfileGenerator {
-            constructor() {
-                this.providers = {
-                    custom: { name: "Custom", doh: "", dot: "", requiresId: false },
-                    cloudflare: { name: "Cloudflare", doh: "https://cloudflare-dns.com/dns-query", dot: "1dot1dot1dot1.cloudflare-dns.com", requiresId: false },
-                    google: { name: "Google", doh: "https://dns.google/dns-query", dot: "dns.google", requiresId: false },
-                    quad9: { name: "Quad9", doh: "https://dns.quad9.net/dns-query", dot: "dns.quad9.net", requiresId: false },
-                    nextdns: { name: "NextDNS", doh: "https://dns.nextdns.io/YOUR-ID", dot: "YOUR-ID.dns.nextdns.io", requiresId: true },
-                    controld: { name: "Control D", doh: "https://dns.controld.com/YOUR-ID", dot: "YOUR-ID.dns.controld.com", requiresId: true },
-                    mullvad: { name: "Mullvad DNS", doh: "https://dns.mullvad.net/dns-query", dot: "dns.mullvad.net", requiresId: false },
-                    opendns: { name: "OpenDNS", doh: "https://doh.opendns.com/dns-query", dot: "dns.opendns.com", requiresId: false },
-                };
-                this.initializeElements();
-                this.populateProviders();
-                this.bindEvents();
-                this.initializeForm();
-            }
+    class DNSProfileGenerator {
+      constructor() {
+        // Translations for i18n
+        this.translations = {
+          en: {
+            generator: "Generator",
+            help: "Help & Info",
+            mainTitle: "Encrypted DNS Profile Generator",
+            mainDesc: "Create secure DNS profiles for iOS 14+, iPadOS 14+, and macOS 11+",
+            labelProfileName: "Profile Name",
+            labelProvider: "Provider Preset",
+            labelResolverId: "Resolver ID",
+            labelProtocol: "DNS Protocol",
+            labelDohURL: "DoH Server URL",
+            labelDotServer: "DoT Server Hostname",
+            labelServerIPs: "Server IP Addresses (Optional)",
+            advanced: "Advanced Settings",
+            btnGenerate: "Generate & Download Profile",
+            btnSavePreset: "Save Preset",
+            btnLoadPreset: "Load Preset",
+            whatTitle: "What is Encrypted DNS?",
+            whatDesc: "Encrypted DNS (like DoH and DoT) secures your DNS queries, preventing others from seeing the websites you visit. This enhances your privacy and security online.",
+            trustedTitle: "Trusted DNS Providers",
+            providerHead: "Provider",
+            dohHead: "DoH URL",
+            dotHead: "DoT Hostname",
+            previewTitle: "Profile Preview (XML)",
+            qrTitle: "Transfer to Device (QR Code)",
+            disclaimerTitle: "Disclaimer",
+            disclaimerDesc: "This tool is provided \"as is\", without warranty of any kind, express or implied. The developer of this tool is not affiliated with any of the DNS providers listed. By using this generator, you accept all risks and responsibilities."
+          },
+          hi: {
+            generator: "जेनरेटर",
+            help: "सहायता और जानकारी",
+            mainTitle: "एन्क्रिप्टेड DNS प्रोफ़ाइल जनरेटर",
+            mainDesc: "iOS 14+, iPadOS 14+, और macOS 11+ के लिए सुरक्षित DNS प्रोफ़ाइल बनाएं",
+            labelProfileName: "प्रोफ़ाइल नाम",
+            labelProvider: "प्रदाता प्रीसेट",
+            labelResolverId: "रिजॉल्वर आईडी",
+            labelProtocol: "DNS प्रोटोकॉल",
+            labelDohURL: "DoH सर्वर URL",
+            labelDotServer: "DoT सर्वर होस्टनाम",
+            labelServerIPs: "सर्वर IP एड्रेस (वैकल्पिक)",
+            advanced: "एडवांस्ड सेटिंग्स",
+            btnGenerate: "प्रोफ़ाइल जेनरेट और डाउनलोड करें",
+            btnSavePreset: "प्रीसेट सेव करें",
+            btnLoadPreset: "प्रीसेट लोड करें",
+            whatTitle: "एन्क्रिप्टेड DNS क्या है?",
+            whatDesc: "एन्क्रिप्टेड DNS (जैसे DoH और DoT) आपके DNS क्वेरी को सुरक्षित करता है, जिससे अन्य लोग आपके विजिट किए गए वेबसाइट्स नहीं देख सकते। इससे आपकी गोपनीयता और सुरक्षा बढ़ती है।",
+            trustedTitle: "विश्वसनीय DNS प्रदाता",
+            providerHead: "प्रदाता",
+            dohHead: "DoH URL",
+            dotHead: "DoT होस्टनाम",
+            previewTitle: "प्रोफ़ाइल प्रीव्यू (XML)",
+            qrTitle: "डिवाइस पर ट्रांसफर करें (QR कोड)",
+            disclaimerTitle: "अस्वीकरण",
+            disclaimerDesc: "यह टूल \"जैसा है\" उपलब्ध कराया गया है, बिना किसी प्रकार की वारंटी के। इस टूल के डेवलपर का सूचीबद्ध DNS प्रदाताओं से कोई संबंध नहीं है। इसका उपयोग करते समय सभी जोखिम और जिम्मेदारी आपकी है।"
+          },
+          fr: {
+            generator: "Générateur",
+            help: "Aide & Infos",
+            mainTitle: "Générateur de profil DNS crypté",
+            mainDesc: "Créez des profils DNS sécurisés pour iOS 14+, iPadOS 14+ et macOS 11+",
+            labelProfileName: "Nom du profil",
+            labelProvider: "Préréglage du fournisseur",
+            labelResolverId: "ID du résolveur",
+            labelProtocol: "Protocole DNS",
+            labelDohURL: "URL du serveur DoH",
+            labelDotServer: "Nom d’hôte du serveur DoT",
+            labelServerIPs: "Adresses IP du serveur (optionnel)",
+            advanced: "Paramètres avancés",
+            btnGenerate: "Générer et télécharger le profil",
+            btnSavePreset: "Enregistrer le préréglage",
+            btnLoadPreset: "Charger le préréglage",
+            whatTitle: "Qu’est-ce que le DNS crypté ?",
+            whatDesc: "Le DNS crypté (DoH et DoT) sécurise vos requêtes DNS, empêchant les autres de voir les sites Web que vous visitez. Améliore la confidentialité et la sécurité.",
+            trustedTitle: "Fournisseurs DNS de confiance",
+            providerHead: "Fournisseur",
+            dohHead: "URL DoH",
+            dotHead: "Nom d’hôte DoT",
+            previewTitle: "Aperçu du profil (XML)",
+            qrTitle: "Transférer vers l’appareil (QR Code)",
+            disclaimerTitle: "Avertissement",
+            disclaimerDesc: "Cet outil est fourni « tel quel », sans garantie. Le développeur n’est affilié à aucun fournisseur DNS. En utilisant cet outil, vous acceptez tous les risques."
+          },
+          es: {
+            generator: "Generador",
+            help: "Ayuda & Información",
+            mainTitle: "Generador de perfil DNS cifrado",
+            mainDesc: "Cree perfiles DNS seguros para iOS 14+, iPadOS 14+ y macOS 11+",
+            labelProfileName: "Nombre del perfil",
+            labelProvider: "Proveedor preestablecido",
+            labelResolverId: "ID del resolutor",
+            labelProtocol: "Protocolo DNS",
+            labelDohURL: "URL del servidor DoH",
+            labelDotServer: "Nombre de host del servidor DoT",
+            labelServerIPs: "Direcciones IP del servidor (opcional)",
+            advanced: "Configuración avanzada",
+            btnGenerate: "Generar y descargar perfil",
+            btnSavePreset: "Guardar preestablecido",
+            btnLoadPreset: "Cargar preestablecido",
+            whatTitle: "¿Qué es DNS cifrado?",
+            whatDesc: "El DNS cifrado (DoH y DoT) protege sus consultas DNS, evitando que otros vean los sitios web que visita. Mejora la privacidad y la seguridad.",
+            trustedTitle: "Proveedores DNS confiables",
+            providerHead: "Proveedor",
+            dohHead: "URL DoH",
+            dotHead: "Host DoT",
+            previewTitle: "Vista previa del perfil (XML)",
+            qrTitle: "Transferir al dispositivo (Código QR)",
+            disclaimerTitle: "Aviso legal",
+            disclaimerDesc: "Esta herramienta se proporciona tal cual, sin garantía. El desarrollador no está afiliado a ningún proveedor DNS. Al usarla, acepta todos los riesgos."
+          },
+          ja: {
+            generator: "ジェネレーター",
+            help: "ヘルプと情報",
+            mainTitle: "暗号化DNSプロファイル生成ツール",
+            mainDesc: "iOS 14+、iPadOS 14+、macOS 11+用の安全なDNSプロファイルを作成",
+            labelProfileName: "プロファイル名",
+            labelProvider: "プロバイダプリセット",
+            labelResolverId: "リゾルバーID",
+            labelProtocol: "DNSプロトコル",
+            labelDohURL: "DoHサーバーURL",
+            labelDotServer: "DoTサーバーホスト名",
+            labelServerIPs: "サーバーIPアドレス（任意）",
+            advanced: "詳細設定",
+            btnGenerate: "プロファイル生成・ダウンロード",
+            btnSavePreset: "プリセット保存",
+            btnLoadPreset: "プリセット読み込み",
+            whatTitle: "暗号化DNSとは？",
+            whatDesc: "暗号化DNS（DoHやDoT）はDNSクエリを保護し、他人が閲覧サイトを見られなくします。プライバシーとセキュリティが向上します。",
+            trustedTitle: "信頼できるDNSプロバイダ",
+            providerHead: "プロバイダ",
+            dohHead: "DoH URL",
+            dotHead: "DoTホスト名",
+            previewTitle: "プロファイルプレビュー（XML）",
+            qrTitle: "端末に転送（QRコード）",
+            disclaimerTitle: "免責事項",
+            disclaimerDesc: "本ツールは現状のまま提供されます。保証はありません。開発者はDNSプロバイダと提携していません。利用は自己責任でお願いします。"
+          },
+          ko: {
+            generator: "생성기",
+            help: "도움말 및 정보",
+            mainTitle: "암호화된 DNS 프로필 생성기",
+            mainDesc: "iOS 14+, iPadOS 14+, macOS 11+용 안전한 DNS 프로필 생성",
+            labelProfileName: "프로필 이름",
+            labelProvider: "제공자 프리셋",
+            labelResolverId: "리졸버 ID",
+            labelProtocol: "DNS 프로토콜",
+            labelDohURL: "DoH 서버 URL",
+            labelDotServer: "DoT 서버 호스트명",
+            labelServerIPs: "서버 IP 주소 (선택사항)",
+            advanced: "고급 설정",
+            btnGenerate: "프로필 생성 및 다운로드",
+            btnSavePreset: "프리셋 저장",
+            btnLoadPreset: "프리셋 불러오기",
+            whatTitle: "암호화 DNS란?",
+            whatDesc: "암호화 DNS(DoH, DoT)는 DNS 쿼리를 보호하여 다른 사람이 방문한 웹사이트를 볼 수 없도록 합니다. 개인 정보 보호와 보안이 강화됩니다.",
+            trustedTitle: "신뢰할 수 있는 DNS 제공자",
+            providerHead: "제공자",
+            dohHead: "DoH URL",
+            dotHead: "DoT 호스트명",
+            previewTitle: "프로필 미리보기(XML)",
+            qrTitle: "기기로 전송 (QR 코드)",
+            disclaimerTitle: "면책 조항",
+            disclaimerDesc: "이 도구는 보증 없이 '있는 그대로' 제공됩니다. 개발자는 나열된 DNS 제공자와 관련이 없습니다. 사용 시 모든 위험을 감수해야 합니다."
+          },
+          ru: {
+            generator: "Генератор",
+            help: "Помощь и информация",
+            mainTitle: "Генератор профиля зашифрованного DNS",
+            mainDesc: "Создайте безопасные DNS-профили для iOS 14+, iPadOS 14+ и macOS 11+",
+            labelProfileName: "Имя профиля",
+            labelProvider: "Поставщик (пресет)",
+            labelResolverId: "ID резолвера",
+            labelProtocol: "Протокол DNS",
+            labelDohURL: "URL сервера DoH",
+            labelDotServer: "Хостнейм сервера DoT",
+            labelServerIPs: "IP-адреса сервера (необязательно)",
+            advanced: "Дополнительные настройки",
+            btnGenerate: "Создать и скачать профиль",
+            btnSavePreset: "Сохранить пресет",
+            btnLoadPreset: "Загрузить пресет",
+            whatTitle: "Что такое зашифрованный DNS?",
+            whatDesc: "Зашифрованный DNS (DoH и DoT) защищает ваши DNS-запросы, предотвращая отслеживание посещаемых сайтов. Повышает приватность и безопасность.",
+            trustedTitle: "Надежные DNS-поставщики",
+            providerHead: "Поставщик",
+            dohHead: "DoH URL",
+            dotHead: "DoT хостнейм",
+            previewTitle: "Предпросмотр профиля (XML)",
+            qrTitle: "Передать на устройство (QR-код)",
+            disclaimerTitle: "Отказ от ответственности",
+            disclaimerDesc: "Этот инструмент предоставляется «как есть», без каких-либо гарантий. Разработчик не связан с указанными DNS-поставщиками. Используя инструмент, вы принимаете все риски."
+          },
+          zh: {
+            generator: "生成器",
+            help: "帮助与信息",
+            mainTitle: "加密DNS配置文件生成器",
+            mainDesc: "为iOS 14+、iPadOS 14+和macOS 11+创建安全的DNS配置文件",
+            labelProfileName: "配置文件名称",
+            labelProvider: "提供商预设",
+            labelResolverId: "解析器ID",
+            labelProtocol: "DNS协议",
+            labelDohURL: "DoH服务器URL",
+            labelDotServer: "DoT服务器主机名",
+            labelServerIPs: "服务器IP地址（可选）",
+            advanced: "高级设置",
+            btnGenerate: "生成并下载配置文件",
+            btnSavePreset: "保存预设",
+            btnLoadPreset: "加载预设",
+            whatTitle: "什么是加密DNS？",
+            whatDesc: "加密DNS（如DoH和DoT）可以保护您的DNS查询，防止他人查看您访问的网站。提高隐私与安全性。",
+            trustedTitle: "可信DNS提供商",
+            providerHead: "提供商",
+            dohHead: "DoH URL",
+            dotHead: "DoT主机名",
+            previewTitle: "配置文件预览（XML）",
+            qrTitle: "转移到设备（二维码）",
+            disclaimerTitle: "免责声明",
+            disclaimerDesc: "本工具按“原样”提供，不作任何保证。开发者与任何DNS提供商无关。使用本工具即表示您接受所有风险。"
+          }
 
-            initializeElements() {
-                this.form = document.getElementById('dns-form');
-                this.providerSelect = document.getElementById('provider');
-                this.protocolSelect = document.getElementById('protocol');
-                this.dohURLInput = document.getElementById('dohURL');
-                this.dotServerInput = document.getElementById('dotServer');
-                this.profileNameInput = document.getElementById('profileName');
-                this.serverIPsInput = document.getElementById('serverIPs');
-                this.resolverIdGroup = document.getElementById('resolver-id-group');
-                this.resolverIdInput = document.getElementById('resolverId');
-                this.messagesContainer = document.getElementById('form-messages');
-                this.generateBtn = document.getElementById('generate-btn');
-                this.btnText = document.getElementById('btn-text');
-                this.dohFields = document.getElementById('doh-fields');
-                this.dotFields = document.getElementById('dot-fields');
-                this.advancedToggle = document.getElementById('advanced-toggle');
-                this.advancedSettings = document.getElementById('advanced-settings');
-                this.tabGenerator = document.getElementById('tab-generator');
-                this.tabHelp = document.getElementById('tab-help');
-                this.contentGenerator = document.getElementById('content-generator');
-                this.contentHelp = document.getElementById('content-help');
-                this.providerInfoTable = document.getElementById('provider-info-table');
-            }
-            
-            populateProviders() {
-                Object.entries(this.providers).forEach(([key, { name, doh, dot }]) => {
-                    const option = document.createElement('option');
-                    option.value = key;
-                    option.textContent = name;
-                    this.providerSelect.appendChild(option);
+        };
 
-                    if (key !== 'custom') {
-                        const row = this.providerInfoTable.insertRow();
-                        row.innerHTML = `
-                            <td class="p-4 font-semibold">${name}</td>
-                            <td class="p-4 relative"><code>${doh}</code><span class="copy-icon-table" data-copy="${doh}">${this.getCopyIcon()}</span></td>
-                            <td class="p-4 relative"><code>${dot}</code><span class="copy-icon-table" data-copy="${dot}">${this.getCopyIcon()}</span></td>
-                        `;
-                    }
-                });
-            }
+        this.providers = {
+          custom: { name: "Custom", doh: "", dot: "", requiresId: false },
+          cloudflare: { name: "Cloudflare", doh: "https://cloudflare-dns.com/dns-query", dot: "1dot1dot1dot1.cloudflare-dns.com", requiresId: false, icon: 'cloudflare' },
+          google: { name: "Google", doh: "https://dns.google/dns-query", dot: "dns.google", requiresId: false, icon: 'google' },
+          quad9: { name: "Quad9", doh: "https://dns.quad9.net/dns-query", dot: "dns.quad9.net", requiresId: false, icon: 'quad9' },
+          nextdns: { name: "NextDNS", doh: "https://dns.nextdns.io/YOUR-ID", dot: "YOUR-ID.dns.nextdns.io", requiresId: true, icon: 'nextdns' },
+          controld: { name: "Control D", doh: "https://dns.controld.com/YOUR-ID", dot: "YOUR-ID.dns.controld.com", requiresId: true, icon: 'controld' },
+          mullvad: { name: "Mullvad DNS", doh: "https://dns.mullvad.net/dns-query", dot: "dns.mullvad.net", requiresId: false, icon: 'mullvad' },
+          opendns: { name: "OpenDNS", doh: "https://doh.opendns.com/dns-query", dot: "dns.opendns.com", requiresId: false, icon: 'opendns' },
+        };
+        this.lang = localStorage.getItem('dnsLang') || 'en';
+        this.initializeElements();
+        this.setLanguage(this.lang);
+        this.populateProviders();
+        this.bindEvents();
+        this.initializeForm();
+        this.themeInit();
+      }
 
-            bindEvents() {
-                this.tabGenerator.addEventListener('click', () => this.switchTab('generator'));
-                this.tabHelp.addEventListener('click', () => this.switchTab('help'));
-                this.providerSelect.addEventListener('change', () => this.handleProviderChange());
-                this.protocolSelect.addEventListener('change', () => this.handleProtocolChange());
-                this.resolverIdInput.addEventListener('input', () => this.updateServerUrls());
-                this.form.addEventListener('submit', (e) => this.handleFormSubmit(e));
-                this.advancedToggle.addEventListener('click', () => this.advancedSettings.classList.toggle('hidden'));
-                
-                document.querySelectorAll('.paste-icon').forEach(icon => {
-                    icon.addEventListener('click', (e) => this.pasteFromClipboard(e));
-                });
+      initializeElements() {
+        this.form = document.getElementById('dns-form');
+        this.providerSelect = document.getElementById('provider');
+        this.protocolSelect = document.getElementById('protocol');
+        this.dohURLInput = document.getElementById('dohURL');
+        this.dotServerInput = document.getElementById('dotServer');
+        this.profileNameInput = document.getElementById('profileName');
+        this.serverIPsInput = document.getElementById('serverIPs');
+        this.resolverIdGroup = document.getElementById('resolver-id-group');
+        this.resolverIdInput = document.getElementById('resolverId');
+        this.messagesContainer = document.getElementById('form-messages');
+        this.generateBtn = document.getElementById('generate-btn');
+        this.btnText = document.getElementById('btn-text');
+        this.dohFields = document.getElementById('doh-fields');
+        this.dotFields = document.getElementById('dot-fields');
+        this.advancedToggle = document.getElementById('advanced-toggle');
+        this.advancedSettings = document.getElementById('advanced-settings');
+        this.tabGenerator = document.getElementById('tab-generator');
+        this.tabHelp = document.getElementById('tab-help');
+        this.contentGenerator = document.getElementById('content-generator');
+        this.contentHelp = document.getElementById('content-help');
+        this.providerInfoTable = document.getElementById('provider-info-table');
+        this.profilePreviewContainer = document.getElementById('profile-preview-container');
+        this.profilePreview = document.getElementById('profile-preview');
+        this.qrCodeContainer = document.getElementById('qr-code-container');
+        this.qrCode = document.getElementById('qr-code');
+        this.langSelect = document.getElementById('lang-select');
+        this.themeToggle = document.getElementById('theme-toggle');
+        this.savePresetBtn = document.getElementById('save-preset-btn');
+        this.loadPresetBtn = document.getElementById('load-preset-btn');
+      }
 
-                this.providerInfoTable.addEventListener('click', (e) => {
-                    const target = e.target.closest('.copy-icon-table');
-                    if (target) {
-                        this.copyToClipboard(target.dataset.copy, target);
-                    }
-                });
-            }
+      setLanguage(lang) {
+        this.lang = lang;
+        localStorage.setItem('dnsLang', lang);
+        const t = this.translations[lang];
+        document.getElementById('main-title').textContent = t.mainTitle;
+        document.getElementById('main-desc').textContent = t.mainDesc;
+        document.getElementById('label-profileName').innerHTML = t.labelProfileName + ' <span class="text-[var(--accent-error)]">*</span>';
+        document.getElementById('label-provider').textContent = t.labelProvider;
+        document.getElementById('label-resolverId').innerHTML = t.labelResolverId + ' <span class="text-[var(--accent-error)]">*</span>';
+        document.getElementById('label-protocol').textContent = t.labelProtocol;
+        document.getElementById('label-dohURL').innerHTML = t.labelDohURL + ' <span class="text-[var(--accent-error)]">*</span>';
+        document.getElementById('label-dotServer').innerHTML = t.labelDotServer + ' <span class="text-[var(--accent-error)]">*</span>';
+        document.getElementById('label-serverIPs').textContent = t.labelServerIPs;
+        this.advancedToggle.textContent = t.advanced;
+        this.btnText.textContent = t.btnGenerate;
+        this.savePresetBtn.textContent = t.btnSavePreset;
+        this.loadPresetBtn.textContent = t.btnLoadPreset;
+        this.tabGenerator.textContent = t.generator;
+        this.tabHelp.textContent = t.help;
+        document.getElementById('what-title').textContent = t.whatTitle;
+        document.getElementById('what-desc').textContent = t.whatDesc;
+        document.getElementById('trusted-title').textContent = t.trustedTitle;
+        document.getElementById('provider-head').textContent = t.providerHead;
+        document.getElementById('doh-head').textContent = t.dohHead;
+        document.getElementById('dot-head').textContent = t.dotHead;
+        document.getElementById('preview-title').textContent = t.previewTitle;
+        document.getElementById('qr-title').textContent = t.qrTitle;
+        document.getElementById('disclaimer-title').textContent = t.disclaimerTitle;
+        document.getElementById('disclaimer-desc').textContent = t.disclaimerDesc;
+      }
 
-            initializeForm() {
-                this.handleProviderChange();
-                this.handleProtocolChange();
-            }
+      themeInit() {
+        this.themeToggle.addEventListener('click', () => {
+          document.body.classList.toggle('light');
+          localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
+        });
+        if (localStorage.getItem('theme') === 'light') {
+          document.body.classList.add('light');
+        }
+      }
 
-            switchTab(tabName) {
-                const isGenerator = tabName === 'generator';
-                this.tabGenerator.classList.toggle('active', isGenerator);
-                this.tabHelp.classList.toggle('active', !isGenerator);
-                this.contentGenerator.classList.toggle('active', isGenerator);
-                this.contentGenerator.classList.toggle('hidden', !isGenerator);
-                this.contentHelp.classList.toggle('active', !isGenerator);
-                this.contentHelp.classList.toggle('hidden', isGenerator);
-            }
-            
-            updateServerUrls() {
-                const provider = this.providers[this.providerSelect.value];
-                if (!provider) return;
-                
-                const resolverId = this.resolverIdInput.value.trim();
-                const displayId = resolverId || 'YOUR-ID';
+      populateProviders() {
+        Object.entries(this.providers).forEach(([key, { name, doh, dot, icon }]) => {
+          const option = document.createElement('option');
+          option.value = key;
+          option.textContent = name;
+          this.providerSelect.appendChild(option);
 
-                if (provider.requiresId) {
-                    this.dohURLInput.value = provider.doh.replace('YOUR-ID', displayId);
-                    this.dotServerInput.value = provider.dot.replace('YOUR-ID', displayId);
-                } else {
-                    this.dohURLInput.value = provider.doh;
-                    this.dotServerInput.value = provider.dot;
-                }
-            }
+          if (key !== 'custom') {
+            const row = this.providerInfoTable.insertRow();
+            row.innerHTML = `
+              <td class="p-4 font-semibold flex items-center gap-2">${this.getProviderIcon(icon)}${name}</td>
+              <td class="p-4 relative"><code>${doh}</code><span class="copy-icon-table" data-copy="${doh}">${this.getCopyIcon()}</span></td>
+              <td class="p-4 relative"><code>${dot}</code><span class="copy-icon-table" data-copy="${dot}">${this.getCopyIcon()}</span></td>
+            `;
+          }
+        });
+      }
 
-            handleProviderChange() {
-                const provider = this.providers[this.providerSelect.value];
-                const isCustom = this.providerSelect.value === 'custom';
-                
-                this.serverIPsInput.value = '';
-                this.dohURLInput.readOnly = !isCustom;
-                this.dotServerInput.readOnly = !isCustom;
-                
-                document.getElementById('paste-doh').style.display = isCustom ? 'block' : 'none';
-                document.getElementById('paste-dot').style.display = isCustom ? 'block' : 'none';
+      bindEvents() {
+        this.tabGenerator.addEventListener('click', () => this.switchTab('generator'));
+        this.tabHelp.addEventListener('click', () => this.switchTab('help'));
+        this.tabGenerator.addEventListener('keydown', (e) => { if(e.key === "ArrowRight" || e.key === "ArrowLeft") { this.tabHelp.focus(); } });
+        this.tabHelp.addEventListener('keydown', (e) => { if(e.key === "ArrowRight" || e.key === "ArrowLeft") { this.tabGenerator.focus(); } });
+        this.providerSelect.addEventListener('change', () => this.handleProviderChange());
+        this.protocolSelect.addEventListener('change', () => this.handleProtocolChange());
+        this.resolverIdInput.addEventListener('input', () => this.updateServerUrls());
+        this.form.addEventListener('submit', (e) => this.handleFormSubmit(e));
+        this.advancedToggle.addEventListener('click', () => this.advancedSettings.classList.toggle('hidden'));
+        this.providerInfoTable.addEventListener('click', (e) => {
+          const target = e.target.closest('.copy-icon-table');
+          if (target) {
+            this.copyToClipboard(target.dataset.copy, target);
+          }
+        });
+        this.savePresetBtn.addEventListener('click', () => {
+          localStorage.setItem('dnsPreset', JSON.stringify(this.gatherFormData()));
+          this.showMessage('Preset saved!', 'success');
+        });
+        this.loadPresetBtn.addEventListener('click', () => {
+          const preset = localStorage.getItem('dnsPreset');
+          if (preset) {
+            const data = JSON.parse(preset);
+            this.profileNameInput.value = data.profileName;
+            this.protocolSelect.value = data.protocol;
+            this.dohURLInput.value = data.dohURL;
+            this.dotServerInput.value = data.dotServer;
+            this.serverIPsInput.value = data.serverIPs.join('\n');
+            this.showMessage('Preset loaded!', 'success');
+            this.handleProtocolChange();
+          } else {
+            this.showMessage('No preset found.', 'error');
+          }
+        });
+        this.langSelect.addEventListener('change', (e) => this.setLanguage(e.target.value));
+      }
 
-                if (provider.requiresId) {
-                    this.resolverIdGroup.classList.remove('hidden');
-                    this.resolverIdInput.required = true;
-                } else {
-                    this.resolverIdGroup.classList.add('hidden');
-                    this.resolverIdInput.required = false;
-                    this.resolverIdInput.value = '';
-                }
-                this.updateServerUrls();
-            }
+      initializeForm() {
+        this.handleProviderChange();
+        this.handleProtocolChange();
+      }
 
-            handleProtocolChange() {
-                const isDoH = this.protocolSelect.value === 'doh';
-                this.dohFields.style.display = isDoH ? 'block' : 'none';
-                this.dotFields.style.display = isDoH ? 'none' : 'block';
-                this.dohURLInput.required = isDoH;
-                this.dotServerInput.required = !isDoH;
-            }
+      switchTab(tabName) {
+        const isGenerator = tabName === 'generator';
+        this.tabGenerator.classList.toggle('active', isGenerator);
+        this.tabHelp.classList.toggle('active', !isGenerator);
+        this.contentGenerator.classList.toggle('active', isGenerator);
+        this.contentGenerator.classList.toggle('hidden', !isGenerator);
+        this.contentHelp.classList.toggle('active', !isGenerator);
+        this.contentHelp.classList.toggle('hidden', isGenerator);
+      }
 
-            validateForm() {
-                this.clearMessages();
-                const schema = {
-                    profileName: { required: true, maxLength: 50 },
-                    resolverId: { required: this.providers[this.providerSelect.value].requiresId },
-                    dohURL: { required: this.protocolSelect.value === 'doh', pattern: /^https:\/\/.+/ },
-                    dotServer: { required: this.protocolSelect.value === 'dot' },
-                };
+      updateServerUrls() {
+        const provider = this.providers[this.providerSelect.value];
+        if (!provider) return;
+        const resolverId = this.resolverIdInput.value.trim();
+        const displayId = resolverId || 'YOUR-ID';
+        if (provider.requiresId) {
+          this.dohURLInput.value = provider.doh.replace('YOUR-ID', displayId);
+          this.dotServerInput.value = provider.dot.replace('YOUR-ID', displayId);
+        } else {
+          this.dohURLInput.value = provider.doh;
+          this.dotServerInput.value = provider.dot;
+        }
+      }
 
-                for (const [field, rules] of Object.entries(schema)) {
-                    const input = this[field + 'Input'];
-                    if (!input) continue;
-                    const value = input.value.trim();
-                    const label = document.querySelector(`label[for=${field}]`).textContent.replace('*','').trim();
+      handleProviderChange() {
+        const provider = this.providers[this.providerSelect.value];
+        const isCustom = this.providerSelect.value === 'custom';
+        this.serverIPsInput.value = '';
+        this.dohURLInput.readOnly = !isCustom;
+        this.dotServerInput.readOnly = !isCustom;
+        if (provider.requiresId) {
+          this.resolverIdGroup.classList.remove('hidden');
+          this.resolverIdInput.required = true;
+        } else {
+          this.resolverIdGroup.classList.add('hidden');
+          this.resolverIdInput.required = false;
+          this.resolverIdInput.value = '';
+        }
+        this.updateServerUrls();
+      }
 
-                    if (rules.required && !value) {
-                        this.showMessage(`${label} is required.`, 'error');
-                        return false;
-                    }
-                    if (rules.maxLength && value.length > rules.maxLength) {
-                        this.showMessage(`${label} is too long.`, 'error');
-                        return false;
-                    }
-                    if (rules.pattern && value && !rules.pattern.test(value)) {
-                         this.showMessage(`Invalid format for ${label}.`, 'error');
-                        return false;
-                    }
-                }
-                return true;
-            }
+      handleProtocolChange() {
+        const isDoH = this.protocolSelect.value === 'doh';
+        this.dohFields.style.display = isDoH ? 'block' : 'none';
+        this.dotFields.style.display = isDoH ? 'none' : 'block';
+        this.dohURLInput.required = isDoH;
+        this.dotServerInput.required = !isDoH;
+      }
 
-            showMessage(message, type = 'error') {
-                this.clearMessages();
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message-box ${type}-message fade-in`;
-                messageDiv.textContent = message;
-                this.messagesContainer.appendChild(messageDiv);
-            }
+      validateForm() {
+        this.clearMessages();
+        const schema = {
+          profileName: { required: true, maxLength: 50 },
+          resolverId: { required: this.providers[this.providerSelect.value].requiresId },
+          dohURL: { required: this.protocolSelect.value === 'doh', pattern: /^https:\/\/.+/ },
+          dotServer: { required: this.protocolSelect.value === 'dot' },
+        };
+        for (const [field, rules] of Object.entries(schema)) {
+          const input = this[field + 'Input'];
+          if (!input) continue;
+          const value = input.value.trim();
+          const label = document.querySelector(`label[for=${field}]`).textContent.replace('*','').trim();
+          if (rules.required && !value) {
+            this.showMessage(`${label} is required.`, 'error');
+            return false;
+          }
+          if (rules.maxLength && value.length > rules.maxLength) {
+            this.showMessage(`${label} is too long.`, 'error');
+            return false;
+          }
+          if (rules.pattern && value && !rules.pattern.test(value)) {
+            this.showMessage(`Invalid format for ${label}.`, 'error');
+            return false;
+          }
+        }
+        return true;
+      }
 
-            clearMessages() {
-                this.messagesContainer.innerHTML = '';
-            }
+      showMessage(message, type = 'error') {
+        this.clearMessages();
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message-box ${type}-message fade-in`;
+        messageDiv.textContent = message;
+        this.messagesContainer.appendChild(messageDiv);
+      }
 
-            async handleFormSubmit(event) {
-                event.preventDefault();
-                if (!this.validateForm()) return;
+      clearMessages() {
+        this.messagesContainer.innerHTML = '';
+      }
 
-                this.setButtonLoading(true);
-                try {
-                    const formData = this.gatherFormData();
-                    const profileContent = this.generateMobileConfigXML(formData);
-                    if (!this.validateXML(profileContent)) throw new Error('Generated profile is invalid.');
-                    
-                    this.downloadProfile(profileContent, formData);
-                    this.showMessage('Profile generated successfully!', 'success');
-                } catch (error) {
-                    this.showMessage(error.message || 'Failed to generate profile.', 'error');
-                } finally {
-                    this.setButtonLoading(false);
-                }
-            }
+      async handleFormSubmit(event) {
+        event.preventDefault();
+        if (!this.validateForm()) return;
+        this.setButtonLoading(true);
+        try {
+          const formData = this.gatherFormData();
+          const profileContent = this.generateMobileConfigXML(formData);
+          if (!this.validateXML(profileContent)) throw new Error('Generated profile is invalid.');
+          this.showProfilePreview(profileContent);
+          this.downloadProfile(profileContent, formData);
+          this.showMessage('Profile generated successfully!', 'success');
+        } catch (error) {
+          this.showMessage(error.message || 'Failed to generate profile.', 'error');
+        } finally {
+          this.setButtonLoading(false);
+        }
+      }
 
-            setButtonLoading(isLoading) {
-                this.generateBtn.disabled = isLoading;
-                this.btnText.innerHTML = isLoading ? `<span class="loading-spinner"></span>Generating...` : 'Generate & Download Profile';
-            }
+      setButtonLoading(isLoading) {
+        this.generateBtn.disabled = isLoading;
+        this.btnText.innerHTML = isLoading ? `<span class="loading-spinner"></span>Generating...` : this.translations[this.lang].btnGenerate;
+      }
 
-            downloadProfile(content, formData) {
-                const blob = new Blob([content], { type: 'application/x-apple-aspen-config' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${this.createSafeFilename(formData.profileName)}.mobileconfig`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
+      downloadProfile(content, formData) {
+        const blob = new Blob([content], { type: 'application/x-apple-aspen-config' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${this.createSafeFilename(formData.profileName)}.mobileconfig`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        this.showQRCode(url);
+      }
 
-            gatherFormData() {
-                const provider = this.providers[this.providerSelect.value];
-                const resolverId = this.resolverIdInput.value.trim();
-                let dohURL = this.dohURLInput.value.trim();
-                let dotServer = this.dotServerInput.value.trim();
+      gatherFormData() {
+        const provider = this.providers[this.providerSelect.value];
+        const resolverId = this.resolverIdInput.value.trim();
+        let dohURL = this.dohURLInput.value.trim();
+        let dotServer = this.dotServerInput.value.trim();
+        if (provider.requiresId && resolverId) {
+          dohURL = provider.doh.replace('YOUR-ID', resolverId);
+          dotServer = provider.dot.replace('YOUR-ID', resolverId);
+        }
+        return {
+          profileName: this.sanitizeInput(this.profileNameInput.value),
+          protocol: this.protocolSelect.value,
+          dohURL: this.sanitizeInput(dohURL),
+          dotServer: this.sanitizeInput(dotServer),
+          serverIPs: this.serverIPsInput.value.split('\n').map(ip => this.sanitizeInput(ip)).filter(Boolean),
+        };
+      }
 
-                if (provider.requiresId && resolverId) {
-                    dohURL = provider.doh.replace('YOUR-ID', resolverId);
-                    dotServer = provider.dot.replace('YOUR-ID', resolverId);
-                }
-
-                return {
-                    profileName: this.sanitizeInput(this.profileNameInput.value),
-                    protocol: this.protocolSelect.value,
-                    dohURL: this.sanitizeInput(dohURL),
-                    dotServer: this.sanitizeInput(dotServer),
-                    serverIPs: this.serverIPsInput.value.split('\n').map(ip => this.sanitizeInput(ip)).filter(Boolean),
-                };
-            }
-
-            generateMobileConfigXML(data) {
-                const payloadUUID = crypto.randomUUID().toUpperCase();
-                const profileUUID = crypto.randomUUID().toUpperCase();
-                
-                const serverAddressesXML = data.serverIPs.length > 0
-                    ? `<key>ServerAddresses</key><array>${data.serverIPs.map(ip => `<string>${this.escapeXML(ip)}</string>`).join('')}</array>`
-                    : '';
-                const protocolConfig = data.protocol === 'doh'
-                    ? `<key>ServerURL</key><string>${this.escapeXML(data.dohURL)}</string>`
-                    : `<key>ServerName</key><string>${this.escapeXML(data.dotServer)}</string>`;
-
-                return `<?xml version="1.0" encoding="UTF-8"?>
+      generateMobileConfigXML(data) {
+        const payloadUUID = self.crypto.randomUUID().toUpperCase();
+        const profileUUID = self.crypto.randomUUID().toUpperCase();
+        const serverAddressesXML = data.serverIPs.length > 0
+          ? `<key>ServerAddresses</key><array>${data.serverIPs.map(ip => `<string>${this.escapeXML(ip)}</string>`).join('')}</array>`
+          : '';
+        const protocolConfig = data.protocol === 'doh'
+          ? `<key>ServerURL</key><string>${this.escapeXML(data.dohURL)}</string>`
+          : `<key>ServerName</key><string>${this.escapeXML(data.dotServer)}</string>`;
+        return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
 <key>PayloadContent</key><array><dict>
@@ -633,57 +875,71 @@ ${protocolConfig}${serverAddressesXML}
 <key>PayloadUUID</key><string>${profileUUID}</string>
 <key>PayloadVersion</key><integer>1</integer>
 </dict></plist>`;
-            }
+      }
 
-            sanitizeInput(input) {
-                const div = document.createElement('div');
-                div.textContent = input;
-                return div.innerHTML.trim();
-            }
+      sanitizeInput(input) {
+        const div = document.createElement('div');
+        div.textContent = input;
+        return div.innerHTML.trim();
+      }
 
-            escapeXML(str) {
-                return str.replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'})[c]);
-            }
+      escapeXML(str) {
+        return str.replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'})[c]);
+      }
 
-            createSafeFilename(name) {
-                return name.replace(/[^a-z0-9\-_.]/gi, '_').toLowerCase() || 'encrypted_dns';
-            }
+      createSafeFilename(name) {
+        return name.replace(/[^a-z0-9\-_.]/gi, '_').toLowerCase() || 'encrypted_dns';
+      }
 
-            validateXML(xml) {
-                return !new DOMParser().parseFromString(xml, "application/xml").querySelector("parsererror");
-            }
-            
-            getCopyIcon() {
-                return `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg><span class="tooltip">Copy</span>`;
-            }
+      validateXML(xml) {
+        return !new DOMParser().parseFromString(xml, "application/xml").querySelector("parsererror");
+      }
 
-            copyToClipboard(text, element) {
-                navigator.clipboard.writeText(text).then(() => {
-                    const tooltip = element.querySelector('.tooltip');
-                    if (tooltip) {
-                        tooltip.textContent = 'Copied!';
-                        setTimeout(() => { tooltip.textContent = 'Copy'; }, 2000);
-                    }
-                });
-            }
+      getCopyIcon() {
+        return `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2M9 5H7a2 2 0 00-2 2v8a2 2 0 002 2h2m4 0h2a2 2 0 002-2v-2a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2z"></path></svg>`;
+      }
 
-            pasteFromClipboard(event) {
-                const input = event.currentTarget.previousElementSibling;
-                navigator.clipboard.readText().then(text => {
-                    input.value = text;
-                    input.dispatchEvent(new Event('input'));
-                }).catch(err => console.error('Failed to read clipboard'));
-            }
+      getProviderIcon(key) {
+        switch(key) {
+          case 'cloudflare': return '<svg width="22" height="22" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" fill="#F38020"/><path d="M14 32h20a8 8 0 10-16 0z" fill="#fff"/></svg>';
+          case 'google': return '<svg width="22" height="22" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#4285F4"/><text x="24" y="32" text-anchor="middle" font-size="20" fill="#fff">G</text></svg>';
+          case 'quad9': return '<svg width="22" height="22" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#D9006C"/><text x="24" y="32" text-anchor="middle" font-size="20" fill="#fff">9</text></svg>';
+          case 'nextdns': return '<svg width="22" height="22" viewBox="0 0 48 48"><rect x="8" y="8" width="32" height="32" rx="8" fill="#0F172A"/><text x="24" y="32" text-anchor="middle" font-size="16" fill="#38BDF8">NX</text></svg>';
+          case 'controld': return '<svg width="22" height="22" viewBox="0 0 48 48"><rect x="8" y="8" width="32" height="32" rx="8" fill="#1E293B"/><text x="24" y="32" text-anchor="middle" font-size="16" fill="#F59E0B">CD</text></svg>';
+          case 'mullvad': return '<svg width="22" height="22" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#6B7280"/><text x="24" y="32" text-anchor="middle" font-size="16" fill="#FBBF24">MV</text></svg>';
+          case 'opendns': return '<svg width="22" height="22" viewBox="0 0 48 48"><rect x="8" y="8" width="32" height="32" rx="8" fill="#F59E0B"/><text x="24" y="32" text-anchor="middle" font-size="16" fill="#fff">OD</text></svg>';
+          default: return '';
         }
+      }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            try {
-                new DNSProfileGenerator();
-            } catch (error) {
-                console.error('Initialization error:', error);
-                document.body.innerHTML = '<div class="error-message">Failed to initialize application.</div>';
-            }
+      copyToClipboard(text, element) {
+        navigator.clipboard.writeText(text).then(() => {
+          element.style.color = "var(--accent-success)";
+          setTimeout(() => { element.style.color = "var(--text-muted)"; }, 1200);
         });
-    </script>
+      }
+
+      showProfilePreview(profileContent) {
+        this.profilePreview.textContent = profileContent;
+        this.profilePreviewContainer.classList.remove('hidden');
+      }
+
+      showQRCode(downloadUrl) {
+        if (this.qrCode) {
+          new QRious({ element: this.qrCode, value: downloadUrl, size: 180 });
+          this.qrCodeContainer.classList.remove('hidden');
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        new DNSProfileGenerator();
+      } catch (error) {
+        console.error('Initialization error:', error);
+        document.body.innerHTML = '<div class="error-message">Failed to initialize application.</div>';
+      }
+    });
+  </script>
 </body>
 </html>
