@@ -14,7 +14,7 @@ A simple, client-side web application to generate encrypted DNS profiles (.mobil
   * **Custom Configuration:** Flexibility to use any DNS provider by entering a custom DoH or DoT server URL.
   * **Advanced Options:** Specify server IP addresses for more complex configurations.
   * **Client-Side Generation:** All processing is done in your browser. No data is sent to any server, ensuring your privacy.
-  * **Modern UI:** A clean and responsive design with a dark theme.
+  * **Dark Theme**
 
 -----
 
