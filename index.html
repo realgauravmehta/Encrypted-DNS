@@ -225,8 +225,6 @@
               <label for="provider" class="block text-sm font-semibold mb-3" id="label-provider">Provider Preset</label>
               <div class="flex gap-2 mb-2">
                 <select id="provider" class="form-input w-full px-4 py-3 rounded-xl appearance-none"></select>
-                <button type="button" id="save-preset-btn" class="btn-primary px-4 py-2 rounded-xl text-sm">Save Preset</button>
-                <button type="button" id="load-preset-btn" class="btn-primary px-4 py-2 rounded-xl text-sm">Load Preset</button>
               </div>
             </div>
 
@@ -276,11 +274,6 @@
               <pre id="profile-preview" class="bg-gray-900 text-green-300 rounded-xl p-4 overflow-x-auto"></pre>
             </div>
 
-            <!-- QR Code Generation -->
-            <div id="qr-code-container" class="hidden mt-4 text-center">
-              <h3 class="text-lg font-semibold mb-2" id="qr-title">Transfer to Device (QR Code)</h3>
-              <canvas id="qr-code"></canvas>
-            </div>
           </form>
         </div>
 
@@ -342,8 +335,6 @@
             labelServerIPs: "Server IP Addresses (Optional)",
             advanced: "Advanced Settings",
             btnGenerate: "Generate & Download Profile",
-            btnSavePreset: "Save Preset",
-            btnLoadPreset: "Load Preset",
             whatTitle: "What is Encrypted DNS?",
             whatDesc: "Encrypted DNS (like DoH and DoT) secures your DNS queries, preventing others from seeing the websites you visit. This enhances your privacy and security online.",
             trustedTitle: "Trusted DNS Providers",
@@ -351,7 +342,6 @@
             dohHead: "DoH URL",
             dotHead: "DoT Hostname",
             previewTitle: "Profile Preview (XML)",
-            qrTitle: "Transfer to Device (QR Code)",
             disclaimerTitle: "Disclaimer",
             disclaimerDesc: "This tool is provided \"as is\", without warranty of any kind, express or implied. The developer of this tool is not affiliated with any of the DNS providers listed. By using this generator, you accept all risks and responsibilities."
           },
@@ -369,8 +359,6 @@
             labelServerIPs: "सर्वर IP एड्रेस (वैकल्पिक)",
             advanced: "एडवांस्ड सेटिंग्स",
             btnGenerate: "प्रोफ़ाइल जेनरेट और डाउनलोड करें",
-            btnSavePreset: "प्रीसेट सेव करें",
-            btnLoadPreset: "प्रीसेट लोड करें",
             whatTitle: "एन्क्रिप्टेड DNS क्या है?",
             whatDesc: "एन्क्रिप्टेड DNS (जैसे DoH और DoT) आपके DNS क्वेरी को सुरक्षित करता है, जिससे अन्य लोग आपके विजिट किए गए वेबसाइट्स नहीं देख सकते। इससे आपकी गोपनीयता और सुरक्षा बढ़ती है।",
             trustedTitle: "विश्वसनीय DNS प्रदाता",
@@ -378,7 +366,6 @@
             dohHead: "DoH URL",
             dotHead: "DoT होस्टनाम",
             previewTitle: "प्रोफ़ाइल प्रीव्यू (XML)",
-            qrTitle: "डिवाइस पर ट्रांसफर करें (QR कोड)",
             disclaimerTitle: "अस्वीकरण",
             disclaimerDesc: "यह टूल \"जैसा है\" उपलब्ध कराया गया है, बिना किसी प्रकार की वारंटी के। इस टूल के डेवलपर का सूचीबद्ध DNS प्रदाताओं से कोई संबंध नहीं है। इसका उपयोग करते समय सभी जोखिम और जिम्मेदारी आपकी है।"
           },
@@ -396,8 +383,6 @@
             labelServerIPs: "Adresses IP du serveur (optionnel)",
             advanced: "Paramètres avancés",
             btnGenerate: "Générer et télécharger le profil",
-            btnSavePreset: "Enregistrer le préréglage",
-            btnLoadPreset: "Charger le préréglage",
             whatTitle: "Qu’est-ce que le DNS crypté ?",
             whatDesc: "Le DNS crypté (DoH et DoT) sécurise vos requêtes DNS, empêchant les autres de voir les sites Web que vous visitez. Améliore la confidentialité et la sécurité.",
             trustedTitle: "Fournisseurs DNS de confiance",
@@ -405,7 +390,6 @@
             dohHead: "URL DoH",
             dotHead: "Nom d’hôte DoT",
             previewTitle: "Aperçu du profil (XML)",
-            qrTitle: "Transférer vers l’appareil (QR Code)",
             disclaimerTitle: "Avertissement",
             disclaimerDesc: "Cet outil est fourni « tel quel », sans garantie. Le développeur n’est affilié à aucun fournisseur DNS. En utilisant cet outil, vous acceptez tous les risques."
           },
@@ -423,8 +407,6 @@
             labelServerIPs: "Direcciones IP del servidor (opcional)",
             advanced: "Configuración avanzada",
             btnGenerate: "Generar y descargar perfil",
-            btnSavePreset: "Guardar preestablecido",
-            btnLoadPreset: "Cargar preestablecido",
             whatTitle: "¿Qué es DNS cifrado?",
             whatDesc: "El DNS cifrado (DoH y DoT) protege sus consultas DNS, evitando que otros vean los sitios web que visita. Mejora la privacidad y la seguridad.",
             trustedTitle: "Proveedores DNS confiables",
@@ -432,7 +414,6 @@
             dohHead: "URL DoH",
             dotHead: "Host DoT",
             previewTitle: "Vista previa del perfil (XML)",
-            qrTitle: "Transferir al dispositivo (Código QR)",
             disclaimerTitle: "Aviso legal",
             disclaimerDesc: "Esta herramienta se proporciona tal cual, sin garantía. El desarrollador no está afiliado a ningún proveedor DNS. Al usarla, acepta todos los riesgos."
           },
@@ -450,8 +431,6 @@
             labelServerIPs: "サーバーIPアドレス（任意）",
             advanced: "詳細設定",
             btnGenerate: "プロファイル生成・ダウンロード",
-            btnSavePreset: "プリセット保存",
-            btnLoadPreset: "プリセット読み込み",
             whatTitle: "暗号化DNSとは？",
             whatDesc: "暗号化DNS（DoHやDoT）はDNSクエリを保護し、他人が閲覧サイトを見られなくします。プライバシーとセキュリティが向上します。",
             trustedTitle: "信頼できるDNSプロバイダ",
@@ -459,7 +438,6 @@
             dohHead: "DoH URL",
             dotHead: "DoTホスト名",
             previewTitle: "プロファイルプレビュー（XML）",
-            qrTitle: "端末に転送（QRコード）",
             disclaimerTitle: "免責事項",
             disclaimerDesc: "本ツールは現状のまま提供されます。保証はありません。開発者はDNSプロバイダと提携していません。利用は自己責任でお願いします。"
           },
@@ -477,8 +455,6 @@
             labelServerIPs: "서버 IP 주소 (선택사항)",
             advanced: "고급 설정",
             btnGenerate: "프로필 생성 및 다운로드",
-            btnSavePreset: "프리셋 저장",
-            btnLoadPreset: "프리셋 불러오기",
             whatTitle: "암호화 DNS란?",
             whatDesc: "암호화 DNS(DoH, DoT)는 DNS 쿼리를 보호하여 다른 사람이 방문한 웹사이트를 볼 수 없도록 합니다. 개인 정보 보호와 보안이 강화됩니다.",
             trustedTitle: "신뢰할 수 있는 DNS 제공자",
@@ -486,7 +462,6 @@
             dohHead: "DoH URL",
             dotHead: "DoT 호스트명",
             previewTitle: "프로필 미리보기(XML)",
-            qrTitle: "기기로 전송 (QR 코드)",
             disclaimerTitle: "면책 조항",
             disclaimerDesc: "이 도구는 보증 없이 '있는 그대로' 제공됩니다. 개발자는 나열된 DNS 제공자와 관련이 없습니다. 사용 시 모든 위험을 감수해야 합니다."
           },
@@ -504,8 +479,6 @@
             labelServerIPs: "IP-адреса сервера (необязательно)",
             advanced: "Дополнительные настройки",
             btnGenerate: "Создать и скачать профиль",
-            btnSavePreset: "Сохранить пресет",
-            btnLoadPreset: "Загрузить пресет",
             whatTitle: "Что такое зашифрованный DNS?",
             whatDesc: "Зашифрованный DNS (DoH и DoT) защищает ваши DNS-запросы, предотвращая отслеживание посещаемых сайтов. Повышает приватность и безопасность.",
             trustedTitle: "Надежные DNS-поставщики",
@@ -513,7 +486,6 @@
             dohHead: "DoH URL",
             dotHead: "DoT хостнейм",
             previewTitle: "Предпросмотр профиля (XML)",
-            qrTitle: "Передать на устройство (QR-код)",
             disclaimerTitle: "Отказ от ответственности",
             disclaimerDesc: "Этот инструмент предоставляется «как есть», без каких-либо гарантий. Разработчик не связан с указанными DNS-поставщиками. Используя инструмент, вы принимаете все риски."
           },
@@ -531,8 +503,6 @@
             labelServerIPs: "服务器IP地址（可选）",
             advanced: "高级设置",
             btnGenerate: "生成并下载配置文件",
-            btnSavePreset: "保存预设",
-            btnLoadPreset: "加载预设",
             whatTitle: "什么是加密DNS？",
             whatDesc: "加密DNS（如DoH和DoT）可以保护您的DNS查询，防止他人查看您访问的网站。提高隐私与安全性。",
             trustedTitle: "可信DNS提供商",
@@ -540,7 +510,6 @@
             dohHead: "DoH URL",
             dotHead: "DoT主机名",
             previewTitle: "配置文件预览（XML）",
-            qrTitle: "转移到设备（二维码）",
             disclaimerTitle: "免责声明",
             disclaimerDesc: "本工具按“原样”提供，不作任何保证。开发者与任何DNS提供商无关。使用本工具即表示您接受所有风险。"
           }
@@ -594,8 +563,6 @@
         this.qrCode = document.getElementById('qr-code');
         this.langSelect = document.getElementById('lang-select');
         this.themeToggle = document.getElementById('theme-toggle');
-        this.savePresetBtn = document.getElementById('save-preset-btn');
-        this.loadPresetBtn = document.getElementById('load-preset-btn');
       }
 
       setLanguage(lang) {
@@ -673,25 +640,7 @@
             this.copyToClipboard(target.dataset.copy, target);
           }
         });
-        this.savePresetBtn.addEventListener('click', () => {
-          localStorage.setItem('dnsPreset', JSON.stringify(this.gatherFormData()));
-          this.showMessage('Preset saved!', 'success');
-        });
-        this.loadPresetBtn.addEventListener('click', () => {
-          const preset = localStorage.getItem('dnsPreset');
-          if (preset) {
-            const data = JSON.parse(preset);
-            this.profileNameInput.value = data.profileName;
-            this.protocolSelect.value = data.protocol;
-            this.dohURLInput.value = data.dohURL;
-            this.dotServerInput.value = data.dotServer;
-            this.serverIPsInput.value = data.serverIPs.join('\n');
-            this.showMessage('Preset loaded!', 'success');
-            this.handleProtocolChange();
-          } else {
-            this.showMessage('No preset found.', 'error');
-          }
-        });
+        
         this.langSelect.addEventListener('change', (e) => this.setLanguage(e.target.value));
       }
 
@@ -823,7 +772,6 @@
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        this.showQRCode(url);
       }
 
       gatherFormData() {
@@ -922,13 +870,6 @@ ${protocolConfig}${serverAddressesXML}
       showProfilePreview(profileContent) {
         this.profilePreview.textContent = profileContent;
         this.profilePreviewContainer.classList.remove('hidden');
-      }
-
-      showQRCode(downloadUrl) {
-        if (this.qrCode) {
-          new QRious({ element: this.qrCode, value: downloadUrl, size: 180 });
-          this.qrCodeContainer.classList.remove('hidden');
-        }
       }
     }
 
